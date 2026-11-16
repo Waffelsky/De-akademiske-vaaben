@@ -127,6 +127,16 @@ Example reading:
 | GET | `/api/v1/notifications` | List notifications |
 | PATCH | `/api/v1/notifications/{notification_id}/acknowledge` | Acknowledge notification |
 
+## Show tables SQL
+
+USE iot_monitoring;
+
+SELECT * FROM sensors;
+SELECT * FROM sensor_readings;
+SELECT * FROM domain_events;
+SELECT * FROM anomalies;
+SELECT * FROM notifications;
+
 ## Notes
 
 - Thresholds are individual per sensor.
