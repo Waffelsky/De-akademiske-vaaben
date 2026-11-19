@@ -50,5 +50,17 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Run quality checks, security scan, tests and Docker build
-        run: make check
+      - name: Check formatting
+        run: make fmt-check
+
+      - name: Check code quality
+        run: make lint
+
+      - name: Scan dependencies for vulnerabilities
+        run: make security
+
+      - name: Run automated tests
+        run: make test
+
+      - name: Build Docker image
+        run: make build
