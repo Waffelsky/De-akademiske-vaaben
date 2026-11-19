@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent IoT Solutions | Asset Monitoring</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">I</div>
+            <div>
+                <strong>INTELLIGENT IoT</strong>
+                <small>SOLUTIONS A/S</small>
+            </div>
+        </div>
+
+        <p class="menu-label">WORKSPACE</p>
+        <nav>
+            <a class="active" href="#overview">▦ &nbsp; Overview</a>
+            <a href="#sensors">◉ &nbsp; Sensors</a>
+            <a href="#alarms">⚠ &nbsp; Alarms</a>
+            <a href="#events">↗ &nbsp; Event log</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <span class="status-dot"></span>
+            <span>API connection</span>
+            <strong id="connection-status">Connecting...</strong>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">ASSET CONDITION MANAGEMENT</p>
+                <h1>Monitoring Dashboard</h1>
+                <p class="subtitle">
+                    Monitor your industrial assets and sensor conditions.
+                </p>
+            </div>
+            <div class="top-actions">
+                <span class="live-indicator">● LIVE DATA</span>
+                <span id="last-updated">Waiting for data...</span>
+            </div>
+        </header>
+
+        <section id="overview">
+            <div class="section-heading">
+                <h2>System overview</h2>
+                <span>Live system metrics</span>
+            </div>
+
+            <div class="stats-grid">
+                <article class="stat-card">
+                    <span class="stat-icon blue">◉</span>
+                    <p>Active sensors</p>
+                    <strong id="sensor-count">—</strong>
+                    <small>Registered sensors</small>
+                </article>
+
+                <article class="stat-card">
+                    <span class="stat-icon purple">⌁</span>
+                    <p>Total readings</p>
+                    <strong id="reading-count">—</strong>
+                    <small>Recorded measurements</small>
+                </article>
+
+                <article class="stat-card">
+                    <span class="stat-icon red">⚠</span>
+                    <p>Detected anomalies</p>
+                    <strong id="anomaly-count">—</strong>
+                    <small>Recorded anomalies</small>
+                </article>
+
+                <article class="stat-card">
+                    <span class="stat-icon orange">♧</span>
+                    <p>Unacknowledged alerts</p>
+                    <strong id="notification-count">—</strong>
+                    <small>Require attention</small>
+                </article>
+            </div>
+        </section>
+
+        <section id="sensors" class="panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Sensor monitoring</h2>
+                    <p>Click a sensor to inspect its measurements</p>
+                </div>
+                <span class="live-indicator">● AUTO REFRESH</span>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sensor</th>
+                            <th>Measurement</th>
+                            <th>Latest value</th>
+                            <th>Allowed range</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensor-table">
+                        <tr>
+                            <td colspan="5">Loading sensors...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sensor-details" class="panel details-panel" hidden>
+            <div class="section-heading details-heading">
+                <div>
+                    <p class="eyebrow">SENSOR INFORMATION</p>
+                    <h2 id="detail-title">Sensor details</h2>
+                    <p id="detail-subtitle">Detailed sensor information</p>
+                </div>
+                <button id="close-details" class="secondary-button" type="button">
+                    Close details ✕
+                </button>
+            </div>
+
+            <div class="detail-stats">
+                <article class="detail-stat">
+                    <span>Latest measurement</span>
+                    <strong id="detail-value">—</strong>
+                    <small id="detail-time">No measurement available</small>
+                </article>
+
+                <article class="detail-stat">
+                    <span>Minimum threshold</span>
+                    <strong id="detail-min">—</strong>
+                    <small>Lower allowed limit</small>
+                </article>
+
+                <article class="detail-stat">
+                    <span>Maximum threshold</span>
+                    <strong id="detail-max">—</strong>
+                    <small>Upper allowed limit</small>
+                </article>
+
+                <article class="detail-stat">
+                    <span>Sensor status</span>
+                    <strong id="detail-status">—</strong>
+                    <small id="detail-status-text">Current condition</small>
+                </article>
+            </div>
+
+            <div class="detail-section">
+                <div class="section-heading">
+                    <div>
+                        <h3>Measurement history</h3>
+                        <p>Recorded sensor values over time</p>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="sensor-chart" class="sensor-chart">
+                        <p class="empty-state">Waiting for measurements...</p>
+                    </div>
+                </div>
+                <p class="chart-note">
+                    The graph shows the available measurements.
+                    The dashed lines represent the configured thresholds.
+                </p>
+            </div>
+
+            <div class="detail-section">
+                <div class="section-heading">
+                    <div>
+                        <h3>Recent measurements</h3>
+                        <p>Latest 10 recorded readings</p>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Measurement</th>
+                                <th>Value</th>
+                                <th>Time received</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-history">
+                            <tr>
+                                <td colspan="4">No measurements available.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="explanation-box">
+                <h3>What does this sensor status mean?</h3>
+                <p id="detail-explanation">
+                    Select a sensor to see its status explanation.
+                </p>
+            </div>
+        </section>
+
+        <section id="alarms" class="panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Alarm center</h2>
+                    <p>Recently detected anomalies and notifications</p>
+                </div>
+            </div>
+            <div id="alarm-list" class="alarm-list">
+                Loading alarms...
+            </div>
+        </section>
+
+        <section id="events" class="panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Event log</h2>
+                    <p>Latest events received by the API</p>
+                </div>
+            </div>
+            <div id="event-list" class="event-list">
+                Loading events...
+            </div>
+        </section>
+
+        <footer>
+            Intelligent IoT Solutions A/S · Predictive Maintenance MVP
+            <span>Data refreshed automatically every 5 seconds</span>
+        </footer>
+    </main>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
