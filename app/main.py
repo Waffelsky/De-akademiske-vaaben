@@ -1,3 +1,6 @@
+
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,6 +15,16 @@ from app.api.sensors import router as sensors_router
 from app.config import settings
 from app.database.connection import Base, engine
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # MVP convenience: create missing tables on startup.
+    # For production, replace with Alembic migrations.
+    Base.metadata.create_all(bind=engine)
+
+    yield
+
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
@@ -19,6 +32,7 @@ app = FastAPI(
         "MVP for IoT sensor monitoring, threshold-based anomaly detection, "
         "domain event persistence and maintenance notifications."
     ),
+    lifespan=lifespan,
 )
 
 # Serve dashboard frontend files
@@ -36,13 +50,6 @@ app.include_router(sensors_router)
 app.include_router(readings_router)
 app.include_router(events_router)
 app.include_router(monitoring_router)
-
-
-@app.on_event("startup")
-def create_database_tables():
-    # MVP convenience: create missing tables on startup.
-    # For production, replace with Alembic migrations.
-    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/", tags=["Root"])
