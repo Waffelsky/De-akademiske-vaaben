@@ -8,6 +8,7 @@ from sqlalchemy import (
     String,
     func,
 )
+
 from app.database.connection import Base
 
 

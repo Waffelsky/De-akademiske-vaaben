@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -36,7 +37,7 @@ def acknowledge_notification(notification_id: int, db: Session = Depends(get_db)
     if notification is None:
         raise HTTPException(status_code=404, detail="Notification not found.")
     notification.acknowledged = True
-    notification.acknowledged_at = datetime.utcnow()
+    notification.acknowledged_at = datetime.now(UTC)
     db.commit()
     db.refresh(notification)
     return notification

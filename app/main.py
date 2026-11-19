@@ -1,17 +1,16 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
-from app.api.routes import router as health_router
-from app.api.sensors import router as sensors_router
-from app.api.readings import router as readings_router
+from app import models  # noqa: F401 - registers all SQLAlchemy models
 from app.api.events import router as events_router
 from app.api.monitoring import router as monitoring_router
+from app.api.readings import router as readings_router
+from app.api.routes import router as health_router
+from app.api.sensors import router as sensors_router
 from app.config import settings
 from app.database.connection import Base, engine
-from app import models  # noqa: F401 - registers all SQLAlchemy models
-
 
 app = FastAPI(
     title=settings.app_name,
