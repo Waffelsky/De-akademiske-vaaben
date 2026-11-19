@@ -7,7 +7,9 @@ class Anomaly(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     sensor_id = Column(Integer, ForeignKey("sensors.id"), nullable=False, index=True)
-    reading_id = Column(Integer, ForeignKey("sensor_readings.id"), nullable=False, unique=True)
+    reading_id = Column(
+        Integer, ForeignKey("sensor_readings.id"), nullable=False, unique=True
+    )
     value = Column(Float, nullable=False)
     threshold_type = Column(String(10), nullable=False)
     threshold_value = Column(Float, nullable=False)

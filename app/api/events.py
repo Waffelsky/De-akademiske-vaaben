@@ -9,7 +9,9 @@ router = APIRouter(prefix="/api/v1/events", tags=["Domain events"])
 
 
 @router.get("", response_model=list[EventRead])
-def list_events(event_type: str | None = None, limit: int = 100, db: Session = Depends(get_db)):
+def list_events(
+    event_type: str | None = None, limit: int = 100, db: Session = Depends(get_db)
+):
     limit = max(1, min(limit, 500))
     query = db.query(DomainEvent)
     if event_type:

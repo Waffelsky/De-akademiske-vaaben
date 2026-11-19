@@ -12,7 +12,11 @@ def process_reading(db: Session, sensor: Sensor, value: float) -> dict:
         event_type="Sensor Value Received",
         sensor_id=sensor.id,
         reading_id=reading.id,
-        payload={"sensor_code": sensor.sensor_code, "value": value, "unit": sensor.unit},
+        payload={
+            "sensor_code": sensor.sensor_code,
+            "value": value,
+            "unit": sensor.unit,
+        },
     )
     db.add(received_event)
 
@@ -51,18 +55,20 @@ def process_reading(db: Session, sensor: Sensor, value: float) -> dict:
         db.add(anomaly)
         db.flush()
 
-        db.add(DomainEvent(
-            event_type="Anomaly Detected",
-            sensor_id=sensor.id,
-            reading_id=reading.id,
-            payload={
-                "sensor_code": sensor.sensor_code,
-                "value": value,
-                "unit": sensor.unit,
-                "threshold_type": threshold_type,
-                "threshold_value": threshold_value,
-            },
-        ))
+        db.add(
+            DomainEvent(
+                event_type="Anomaly Detected",
+                sensor_id=sensor.id,
+                reading_id=reading.id,
+                payload={
+                    "sensor_code": sensor.sensor_code,
+                    "value": value,
+                    "unit": sensor.unit,
+                    "threshold_type": threshold_type,
+                    "threshold_value": threshold_value,
+                },
+            )
+        )
 
         notification = Notification(
             anomaly_id=anomaly.id,
@@ -73,13 +79,15 @@ def process_reading(db: Session, sensor: Sensor, value: float) -> dict:
         db.add(notification)
         db.flush()
 
-        response.update({
-            "status": "anomaly_detected",
-            "anomaly_detected": True,
-            "anomaly_id": anomaly.id,
-            "notification_created": True,
-            "notification_id": notification.id,
-        })
+        response.update(
+            {
+                "status": "anomaly_detected",
+                "anomaly_detected": True,
+                "anomaly_id": anomaly.id,
+                "notification_created": True,
+                "notification_id": notification.id,
+            }
+        )
 
     db.commit()
     return response

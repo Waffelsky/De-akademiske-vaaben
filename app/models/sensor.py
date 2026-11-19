@@ -1,11 +1,22 @@
-from sqlalchemy import Boolean, CheckConstraint, Column, DateTime, Float, Integer, String, func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
+    Float,
+    Integer,
+    String,
+    func,
+)
 from app.database.connection import Base
 
 
 class Sensor(Base):
     __tablename__ = "sensors"
     __table_args__ = (
-        CheckConstraint("min_threshold < max_threshold", name="check_sensor_thresholds"),
+        CheckConstraint(
+            "min_threshold < max_threshold", name="check_sensor_thresholds"
+        ),
     )
 
     id = Column(Integer, primary_key=True, index=True)

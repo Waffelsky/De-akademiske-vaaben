@@ -15,7 +15,9 @@ class SensorCreate(BaseModel):
     def validate_unit_for_type(self):
         expected = {"temperature": "celsius", "vibration": "mm/s"}
         if self.unit != expected[self.measurement_type]:
-            raise ValueError(f"{self.measurement_type} requires unit {expected[self.measurement_type]}")
+            raise ValueError(
+                f"{self.measurement_type} requires unit {expected[self.measurement_type]}"
+            )
         if self.min_threshold >= self.max_threshold:
             raise ValueError("min_threshold must be lower than max_threshold")
         return self

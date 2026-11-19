@@ -9,4 +9,6 @@ class SensorReading(Base):
     sensor_id = Column(Integer, ForeignKey("sensors.id"), nullable=False, index=True)
     value = Column(Float, nullable=False)
     unit = Column(String(20), nullable=False)
-    received_at = Column(DateTime, server_default=func.now(), nullable=False, index=True)
+    received_at = Column(
+        DateTime, server_default=func.now(), nullable=False, index=True
+    )

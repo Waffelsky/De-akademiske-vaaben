@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -24,11 +23,7 @@ app = FastAPI(
 )
 
 # Serve dashboard frontend files
-app.mount(
-    "/static",
-    StaticFiles(directory="app/static"),
-    name="static"
-)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 @app.get("/dashboard", include_in_schema=False)
@@ -64,9 +59,7 @@ def root():
 @app.get("/health/database", tags=["Health"])
 def database_health():
     with engine.connect() as connection:
-        database_name = connection.execute(
-            text("SELECT DATABASE()")
-        ).scalar()
+        database_name = connection.execute(text("SELECT DATABASE()")).scalar()
 
     return {
         "status": "healthy",

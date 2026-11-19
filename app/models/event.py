@@ -10,4 +10,6 @@ class DomainEvent(Base):
     sensor_id = Column(Integer, ForeignKey("sensors.id"), nullable=False, index=True)
     reading_id = Column(Integer, ForeignKey("sensor_readings.id"), nullable=True)
     payload = Column(JSON, nullable=False)
-    occurred_at = Column(DateTime, server_default=func.now(), nullable=False, index=True)
+    occurred_at = Column(
+        DateTime, server_default=func.now(), nullable=False, index=True
+    )

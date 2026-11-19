@@ -18,7 +18,9 @@ def create_sensor(data: SensorCreate, db: Session = Depends(get_db)):
         db.refresh(sensor)
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=409, detail="A sensor with this sensor_code already exists.")
+        raise HTTPException(
+            status_code=409, detail="A sensor with this sensor_code already exists."
+        )
     return sensor
 
 

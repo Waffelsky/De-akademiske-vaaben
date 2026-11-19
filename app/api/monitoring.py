@@ -16,7 +16,9 @@ def list_anomalies(limit: int = 100, db: Session = Depends(get_db)):
 
 
 @router.get("/notifications", response_model=list[NotificationRead])
-def list_notifications(acknowledged: bool | None = None, limit: int = 100, db: Session = Depends(get_db)):
+def list_notifications(
+    acknowledged: bool | None = None, limit: int = 100, db: Session = Depends(get_db)
+):
     limit = max(1, min(limit, 500))
     query = db.query(Notification)
     if acknowledged is not None:
@@ -24,9 +26,13 @@ def list_notifications(acknowledged: bool | None = None, limit: int = 100, db: S
     return query.order_by(Notification.id.desc()).limit(limit).all()
 
 
-@router.patch("/notifications/{notification_id}/acknowledge", response_model=NotificationRead)
+@router.patch(
+    "/notifications/{notification_id}/acknowledge", response_model=NotificationRead
+)
 def acknowledge_notification(notification_id: int, db: Session = Depends(get_db)):
-    notification = db.query(Notification).filter(Notification.id == notification_id).first()
+    notification = (
+        db.query(Notification).filter(Notification.id == notification_id).first()
+    )
     if notification is None:
         raise HTTPException(status_code=404, detail="Notification not found.")
     notification.acknowledged = True

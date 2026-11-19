@@ -6,7 +6,9 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True, index=True)
-    anomaly_id = Column(Integer, ForeignKey("anomalies.id"), nullable=False, unique=True)
+    anomaly_id = Column(
+        Integer, ForeignKey("anomalies.id"), nullable=False, unique=True
+    )
     title = Column(String(150), nullable=False)
     message = Column(String(500), nullable=False)
     severity = Column(String(20), nullable=False, default="warning")
