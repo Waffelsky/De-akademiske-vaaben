@@ -1,4 +1,3 @@
-
 def create_test_sensor(
     client,
     sensor_code,
@@ -127,9 +126,7 @@ def test_reading_from_inactive_sensor_returns_404(client, db_session):
     create_test_sensor(client, "TEMP-INACTIVE")
 
     sensor = (
-        db_session.query(Sensor)
-        .filter(Sensor.sensor_code == "TEMP-INACTIVE")
-        .first()
+        db_session.query(Sensor).filter(Sensor.sensor_code == "TEMP-INACTIVE").first()
     )
 
     sensor.is_active = False

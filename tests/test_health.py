@@ -1,4 +1,3 @@
-
 def test_health_endpoint_returns_healthy(client):
     response = client.get("/health")
 

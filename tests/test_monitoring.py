@@ -1,4 +1,3 @@
-
 def create_sensor_and_reading(client, sensor_code, value):
     sensor_payload = {
         "sensor_code": sensor_code,
@@ -101,9 +100,7 @@ def test_notification_can_be_acknowledged(client):
     notifications = client.get("/api/v1/notifications").json()
     notification_id = notifications[0]["id"]
 
-    response = client.patch(
-        f"/api/v1/notifications/{notification_id}/acknowledge"
-    )
+    response = client.patch(f"/api/v1/notifications/{notification_id}/acknowledge")
 
     assert response.status_code == 200
     assert response.json()["acknowledged"] is True
@@ -118,22 +115,16 @@ def test_notification_can_be_acknowledged(client):
 
 
 def test_acknowledging_nonexistent_notification_returns_404(client):
-    response = client.patch(
-        "/api/v1/notifications/99999/acknowledge"
-    )
+    response = client.patch("/api/v1/notifications/99999/acknowledge")
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Notification not found."
 
 
-def test_normal_reading_creates_consistent_database_records(
-    client, db_session
-):
+def test_normal_reading_creates_consistent_database_records(client, db_session):
     from app.models import DomainEvent, SensorReading
 
-    reading = create_sensor_and_reading(
-        client, "INTEGRITY-NORMAL", 25
-    )
+    reading = create_sensor_and_reading(client, "INTEGRITY-NORMAL", 25)
 
     stored_reading = (
         db_session.query(SensorReading)
@@ -156,26 +147,26 @@ def test_normal_reading_creates_consistent_database_records(
     assert events[0].sensor_id == stored_reading.sensor_id
 
 
-def test_anomaly_and_notification_have_consistent_references(
-    client, db_session
-):
+def test_anomaly_and_notification_have_consistent_references(client, db_session):
     from app.models import Anomaly, DomainEvent, Notification, SensorReading
 
-    result = create_sensor_and_reading(
-        client, "INTEGRITY-ANOMALY", 55
+    result = create_sensor_and_reading(client, "INTEGRITY-ANOMALY", 55)
+
+    reading = (
+        db_session.query(SensorReading)
+        .filter(SensorReading.id == result["reading_id"])
+        .first()
     )
 
-    reading = db_session.query(SensorReading).filter(
-        SensorReading.id == result["reading_id"]
-    ).first()
+    anomaly = (
+        db_session.query(Anomaly).filter(Anomaly.id == result["anomaly_id"]).first()
+    )
 
-    anomaly = db_session.query(Anomaly).filter(
-        Anomaly.id == result["anomaly_id"]
-    ).first()
-
-    notification = db_session.query(Notification).filter(
-        Notification.id == result["notification_id"]
-    ).first()
+    notification = (
+        db_session.query(Notification)
+        .filter(Notification.id == result["notification_id"])
+        .first()
+    )
 
     assert reading is not None
     assert anomaly is not None
@@ -190,9 +181,7 @@ def test_anomaly_and_notification_have_consistent_references(
     assert notification.severity == "critical"
 
     events = (
-        db_session.query(DomainEvent)
-        .filter(DomainEvent.reading_id == reading.id)
-        .all()
+        db_session.query(DomainEvent).filter(DomainEvent.reading_id == reading.id).all()
     )
 
     assert len(events) == 2
@@ -226,9 +215,9 @@ def test_failed_commit_rolls_back_reading_and_related_records(
 
     assert sensor_response.status_code == 201
 
-    sensor = db_session.query(Sensor).filter(
-        Sensor.sensor_code == "ROLLBACK-TEST"
-    ).first()
+    sensor = (
+        db_session.query(Sensor).filter(Sensor.sensor_code == "ROLLBACK-TEST").first()
+    )
 
     def fail_commit(self):
         raise RuntimeError("Simulated database commit failure")
@@ -246,16 +235,18 @@ def test_failed_commit_rolls_back_reading_and_related_records(
 
     db_session.expire_all()
 
-    assert db_session.query(SensorReading).filter(
-        SensorReading.sensor_id == sensor.id
-    ).count() == 0
+    assert (
+        db_session.query(SensorReading)
+        .filter(SensorReading.sensor_id == sensor.id)
+        .count()
+        == 0
+    )
 
-    assert db_session.query(Anomaly).filter(
-        Anomaly.sensor_id == sensor.id
-    ).count() == 0
+    assert db_session.query(Anomaly).filter(Anomaly.sensor_id == sensor.id).count() == 0
 
     assert db_session.query(Notification).count() == 0
 
-    assert db_session.query(DomainEvent).filter(
-        DomainEvent.sensor_id == sensor.id
-    ).count() == 0
+    assert (
+        db_session.query(DomainEvent).filter(DomainEvent.sensor_id == sensor.id).count()
+        == 0
+    )

@@ -1,4 +1,3 @@
-
 def test_create_sensor(client):
     payload = {
         "sensor_code": "TEMP-TEST-001",

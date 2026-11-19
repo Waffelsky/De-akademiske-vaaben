@@ -1,4 +1,3 @@
-
 def test_readings_limit_is_capped_at_500(client):
     response = client.get("/api/v1/readings", params={"limit": 1000})
 
