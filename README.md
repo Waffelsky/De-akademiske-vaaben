@@ -1,163 +1,220 @@
-# Predictive Maintenance API – Docker MVP
+# Intelligent IoT Solutions – Predictive Maintenance
 
-FastAPI service for IoT sensor readings, threshold checks, domain events, anomaly records and notifications.
+IoT monitoring MVP built with FastAPI, MySQL and Docker.
 
-This repository is designed to run with **Docker Compose on both Windows (Docker Desktop with Linux containers) and macOS (Docker Desktop)**. The API and MySQL run as separate containers. No Python or MySQL installation is required on the host computer.
+The application receives sensor measurements through a REST API, checks values against configured thresholds, detects anomalies and generates maintenance notifications.
 
-## Architecture
-
-- FastAPI exposes the REST API and Swagger documentation.
-- SQLAlchemy maps Python models to MySQL tables.
-- MySQL persists sensors, readings, domain events, anomalies and notifications.
-- A reading creates `Sensor Value Received`.
-- Values outside that sensor's individual minimum/maximum threshold also create `Anomaly Detected` and a notification.
-- Docker Compose creates a private network between the API and database.
-- MySQL data is stored in a named Docker volume (`mysql_data`) and survives container recreation.
+The project includes a web-based monitoring dashboard with sensor status, alarms, historical measurements and mathematical predictive maintenance forecasting.
 
 ## Requirements
 
-- Windows 10/11 with Docker Desktop configured for Linux containers, or macOS with Docker Desktop.
-- Docker Compose v2 (`docker compose` command).
-- Git (to clone or update the repository).
+- Windows 10/11
+- Docker Desktop
+- Docker Compose
+- Git (if cloning the repository)
 
-## 1. Get the project
+Docker Desktop must be running before starting the application.
 
-Clone the repository:
+## Getting Started
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Waffelsky/De-akademiske-vaaben.git
 cd De-akademiske-vaaben
 ```
 
-If you already have the project folder, open a terminal in its root (the folder containing `docker-compose.yml`).
+Alternatively, download the repository and open PowerShell in the project root folder.
 
-## 2. Create local environment configuration
+### 2. Configure environment variables
 
-Create `.env` from the example.
-
-**Windows PowerShell:**
+Create your local `.env` file:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-**macOS Terminal:**
+Open `.env` and configure the database passwords.
 
-```bash
-cp .env.example .env
+```env
+APP_NAME=Predictive Maintenance API
+APP_VERSION=0.2.0
+
+DB_USER=iot_api
+DB_PASSWORD=your_password
+DB_ROOT_PASSWORD=your_root_password
+DB_HOST=db
+DB_PORT=3306
+DB_NAME=iot_monitoring
 ```
 
-Open `.env` in VS Code and replace both placeholder passwords with strong, unique passwords:
+Use your own passwords instead of the examples.
 
-- `DB_PASSWORD`: password for the API's MySQL user.
-- `DB_ROOT_PASSWORD`: MySQL administrator password.
+**Important:** Never commit the `.env` file to GitHub.
 
-Do not commit or share `.env`. It is excluded by `.gitignore`. Never paste its contents into screenshots or chat.
+### 3. Start the application
 
-The `DB_HOST` value in `.env.example` is `db`, which is the Docker Compose service name. The API service also explicitly receives `DB_HOST=db` and `DB_PORT=3306`.
+Make sure Docker Desktop is running.
 
-## 3. Start the complete application
-
-Run this command from the project root on either Windows or macOS:
-
-```bash
-docker compose up --build -d
-```
-
-Check that both containers are running:
-
-```bash
-docker compose ps
-```
-
-View logs if needed:
-
-```bash
-docker compose logs -f api
-docker compose logs -f db
-```
-
-The API waits for MySQL's health check before starting. On the first start, MySQL may need a little time to initialize.
-
-## 4. Test locally on the host computer
-
-Open these addresses in a browser:
-
-- Swagger UI: http://localhost:8000/docs
-- API health: http://localhost:8000/health
-- Database health: http://localhost:8000/health/database
-
-The API creates missing tables on startup. Existing tables are not migrated automatically; use Alembic before changing deployed schemas.
-
-## 5. Allow another computer on the same local network to access the API
-
-The API port is published on the Docker host as port `8000`. MySQL port `3306` is **not** published to the host or local network.
-
-Find the host computer's local IP address:
-
-**Windows PowerShell:**
+Open PowerShell in the project root and execute:
 
 ```powershell
-ipconfig
+.\start.ps1
 ```
 
-Look for the IPv4 address of the active Wi-Fi or Ethernet adapter.
+The startup script automatically:
 
-**macOS Terminal (Wi-Fi, commonly en0):**
+1. Starts the Docker Compose services.
+2. Builds the API Docker image.
+3. Starts the MySQL database.
+4. Waits for the API health endpoint.
+5. Displays the application URLs.
 
-```bash
-ipconfig getifaddr en0
+The first startup may take a little longer because Docker needs to download images and initialize the database.
+
+If PowerShell blocks script execution:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-From another computer connected to the same trusted LAN, open:
+Then run:
+
+```powershell
+.\start.ps1
+```
+
+## Access the Application
+
+Once the application is running:
+
+| Service | URL |
+|---|---|
+| Dashboard | http://localhost:8000/dashboard |
+| Swagger API Documentation | http://localhost:8000/docs |
+| API Health | http://localhost:8000/health |
+| Database Health | http://localhost:8000/health/database |
+
+Swagger can be used to test the REST API directly from your browser.
+
+## How the System Works
+
+The application consists of two Docker services:
+
+**API – FastAPI**
+- Receives sensor measurements.
+- Validates incoming data.
+- Executes monitoring and threshold logic.
+- Generates domain events.
+- Creates anomalies and notifications.
+- Serves the dashboard and REST API.
+
+**Database – MySQL**
+- Stores registered sensors.
+- Stores sensor measurements.
+- Stores domain events.
+- Stores detected anomalies.
+- Stores maintenance notifications.
+
+SQLAlchemy is used to communicate with the MySQL database.
+
+### Event Flow
 
 ```text
-http://HOST_LOCAL_IP:8000/docs
+IoT Device / Postman
+        |
+        v
+   REST API
+        |
+        v
+Sensor Value Received
+        |
+        v
+  Store Reading
+        |
+        v
+ Threshold Check
+        |
+        +--------------------+
+        |                    |
+        v                    v
+  Normal Value         Threshold Exceeded
+        |                    |
+        v                    v
+   No Anomaly         Anomaly Detected
+                             |
+                             v
+                    Create Notification
+                             |
+                             v
+                       Store in MySQL
+                             |
+                             v
+                    Monitoring Dashboard
 ```
 
-Replace `HOST_LOCAL_IP` with the host computer's local IP address. For example, if the host IP is `192.168.1.25`, use `http://192.168.1.25:8000/docs`.
+The events are processed synchronously as part of the API request and persisted in the database.
 
-If it does not connect:
-- Confirm both computers are on the same LAN.
-- Confirm Docker Desktop is running and `docker compose ps` shows both services running.
-- Allow inbound TCP port `8000` in the host operating system's firewall, restricted to the trusted private/local network.
-- Do not expose MySQL port `3306`.
-- Some guest Wi-Fi networks enable client isolation and prevent devices from communicating.
+## Predictive Maintenance
 
-**Scope:** this setup provides access from the host itself and other devices on the same local network. It does not make the API publicly available over the internet. Public internet access would require additional networking and HTTPS/security configuration and is outside this local Docker setup.
+The dashboard includes a mathematical forecasting model that estimates the future development of sensor measurements.
 
-## 6. Stop and restart
+The model is not based on AI or Machine Learning.
 
-Stop containers but keep database data:
+It uses historical measurements, weighted trends, changes in the trend and exponential damping to calculate future values.
 
-```bash
-docker compose down
-```
+The forecast is displayed as a green continuation of the historical measurement graph.
 
-Start again:
+- Blue line: Historical measurements.
+- Green line: Calculated forecast.
+- Red line: Configured threshold.
 
-```bash
-docker compose up -d
-```
+The forecast contains eight future points, with 30 minutes between each point.
 
-To stop and permanently delete the database volume and its data, use:
+### Measurement Time Intervals
 
-```bash
-docker compose down -v
-```
+The dashboard uses a fixed 30-minute interval between historical measurement points.
 
-**Warning:** `down -v` deletes the persisted MySQL data. Do not use it if you need to keep test/demo data.
+This is intentional because the MVP uses manually submitted test measurements through the API. Their original timestamps can be very close together.
 
-## Demo flow
+The original timestamps are preserved in the database. Only the visualization uses the standardized 30-minute intervals.
 
-1. `POST /api/v1/sensors` – create a temperature sensor.
-2. `POST /api/v1/sensors` – create a vibration sensor.
-3. `POST /api/v1/readings` – submit a normal reading.
-4. `POST /api/v1/readings` – submit an out-of-range reading.
-5. Inspect `/api/v1/events`, `/api/v1/anomalies`, `/api/v1/notifications`.
-6. Acknowledge a notification with `PATCH /api/v1/notifications/{id}/acknowledge`.
+Machine Learning could be introduced in a future production solution using larger amounts of historical sensor data and known failure patterns.
 
-Example temperature sensor:
+## API Endpoints
+
+All application endpoints use the `/api/v1` prefix.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/v1/sensors` | Create a sensor |
+| GET | `/api/v1/sensors` | List all sensors |
+| GET | `/api/v1/sensors/{sensor_id}` | Get a specific sensor |
+| POST | `/api/v1/readings` | Submit a sensor measurement |
+| GET | `/api/v1/readings` | Retrieve measurements |
+| GET | `/api/v1/events` | Retrieve domain events |
+| GET | `/api/v1/anomalies` | Retrieve anomalies |
+| GET | `/api/v1/notifications` | Retrieve notifications |
+| PATCH | `/api/v1/notifications/{notification_id}/acknowledge` | Acknowledge a notification |
+
+Health endpoints:
+
+- `GET /health`
+- `GET /health/database`
+
+See Swagger for request schemas and additional parameters.
+
+## Testing the API
+
+Open Swagger:
+
+http://localhost:8000/docs
+
+### Create a sensor
+
+`POST /api/v1/sensors`
+
+Example JSON:
 
 ```json
 {
@@ -170,20 +227,20 @@ Example temperature sensor:
 }
 ```
 
-Example vibration sensor:
+### Submit a normal measurement
+
+`POST /api/v1/readings`
 
 ```json
 {
-  "sensor_code": "VIB-001",
-  "name": "Motor vibration",
-  "measurement_type": "vibration",
-  "unit": "mm/s",
-  "min_threshold": 0,
-  "max_threshold": 10
+  "sensor_code": "TEMP-001",
+  "value": 65
 }
 ```
 
-Example reading:
+### Trigger an anomaly
+
+Submit a value above the configured threshold:
 
 ```json
 {
@@ -192,39 +249,141 @@ Example reading:
 }
 ```
 
-## API endpoints
+The system will detect the anomaly and generate a maintenance notification.
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/health` | API health |
-| GET | `/health/database` | Database health |
-| POST | `/api/v1/sensors` | Create sensor |
-| GET | `/api/v1/sensors` | List sensors |
-| GET | `/api/v1/sensors/{sensor_id}` | Get sensor |
-| POST | `/api/v1/readings` | Receive and process sensor reading |
-| GET | `/api/v1/readings` | List readings; optional `sensor_code` and `limit` |
-| GET | `/api/v1/events` | List domain events; optional `event_type` and `limit` |
-| GET | `/api/v1/anomalies` | List anomalies |
-| GET | `/api/v1/notifications` | List notifications |
-| PATCH | `/api/v1/notifications/{notification_id}/acknowledge` | Acknowledge notification |
+Check the results using:
 
-## CI/CD and deployment
+- `GET /api/v1/events`
+- `GET /api/v1/anomalies`
+- `GET /api/v1/notifications`
 
-GitHub Actions runs the automated test suite on pushes and pull requests to `main` and `develop`. This validates changes before they are merged.
+### Acknowledge a notification
 
-For this local-host deployment model, a GitHub-hosted Actions runner normally cannot directly reach a developer's private LAN computer. Therefore, deployment to the local Docker host is performed by the host operator after tests pass:
+`PATCH /api/v1/notifications/{notification_id}/acknowledge`
 
-```bash
-git pull
-docker compose up --build -d
+Replace `{notification_id}` with the ID of the notification.
+
+## Useful Docker Commands
+
+All commands below must be executed from the project root.
+
+**Check running containers:**
+
+```powershell
+docker compose ps
 ```
 
-This keeps CI automated and makes the local deployment repeatable without exposing the host to the public internet or storing remote-host credentials in GitHub.
+**View API logs:**
 
-## Notes and limitations
+```powershell
+docker compose logs -f api
+```
 
-- Thresholds are individual per sensor.
-- The MVP uses synchronous event processing inside the API request; the events are persisted for traceability. A message broker/queue can be added later.
-- Notifications are persisted records, not email/SMS delivery.
-- `create_all()` is convenient for an MVP. Use Alembic migrations for production schema changes.
-- This is a local-network Docker deployment, not a public cloud-hosted service.
+**View database logs:**
+
+```powershell
+docker compose logs -f db
+```
+
+**Stop the application:**
+
+```powershell
+docker compose down
+```
+
+**Start the application again:**
+
+```powershell
+.\start.ps1
+```
+
+**Rebuild and restart manually:**
+
+```powershell
+docker compose up -d --build
+```
+
+**Stop and delete all containers and database data:**
+
+```powershell
+docker compose down -v
+```
+
+Warning: `docker compose down -v` deletes the MySQL data volume. All persisted test data will be lost.
+
+## Access from Another Computer
+
+The API can be accessed from another computer on the same local network.
+
+Find the host computer's IPv4 address:
+
+```powershell
+ipconfig
+```
+
+Use the IPv4 address of the active network adapter.
+
+Example:
+
+```text
+http://192.168.1.25:8000/dashboard
+http://192.168.1.25:8000/docs
+```
+
+Replace the example IP with the actual address.
+
+Make sure both computers are connected to the same network and that the host firewall allows inbound traffic on port 8000.
+
+MySQL port 3306 is not exposed to the local network.
+
+## CI/CD
+
+GitHub Actions automatically runs the CI pipeline when code is pushed or pull requests are created for the configured branches.
+
+The pipeline includes:
+
+- Dependency installation.
+- Code formatting checks.
+- Linting.
+- Dependency vulnerability scanning.
+- Automated tests.
+- Docker image build.
+
+Deployment to the local Docker host is performed manually after changes have been pulled:
+
+```powershell
+git pull
+.\start.ps1
+```
+
+## Project Structure
+
+```text
+De-akademiske-vaaben/
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+├── app/
+│   ├── api/
+│   ├── database/
+│   ├── models/
+│   ├── schemas/
+│   ├── services/
+│   ├── static/
+│   │   ├── index.html
+│   │   ├── style.css
+│   │   └── dashboard.js
+│   └── main.py
+│
+├── tests/
+│
+├── .env.example
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── requirements-dev.txt
+├── start.ps1
+└── README.md
+```
